@@ -1,0 +1,53 @@
+# .github/CODEOWNERS
+# ═══════════════════════════════════════════════════════════════
+# CODEOWNERS — enforces who must review PRs touching each module.
+#
+# HOW IT WORKS:
+#   When a PR touches files in a path, GitHub auto-requests review
+#   from the listed owner. PR CANNOT MERGE without their approval.
+#   Combined with "Require review from Code Owners" branch protection.
+#
+# FORMAT: <path pattern>  <GitHub user or team>
+# ═══════════════════════════════════════════════════════════════
+
+# ─── Framework core — only framework lead approves ───────────────────────────
+/src/main/java/com/amazon/framework/           @framework-lead
+/src/main/resources/                           @framework-lead
+/pom.xml                                       @framework-lead
+/Jenkinsfile                                   @framework-lead
+/docker/                                       @framework-lead
+/.github/workflows/                            @framework-lead
+/.github/CODEOWNERS                            @framework-lead
+
+# ─── Login / Auth module — @auth-team owns ───────────────────────────────────
+/src/test/java/com/amazon/login/               @auth-team
+/src/test/resources/features/login/           @auth-team
+/src/test/resources/suites/auth-suite.xml     @auth-team
+
+# ─── Product module — @product-team owns ─────────────────────────────────────
+/src/test/java/com/amazon/product/            @product-team
+/src/test/resources/features/product/        @product-team
+
+# ─── Cart module — @cart-team owns ───────────────────────────────────────────
+/src/test/java/com/amazon/cart/               @cart-team
+/src/test/resources/features/cart/           @cart-team
+
+# ─── Checkout module — @checkout-team owns ───────────────────────────────────
+/src/test/java/com/amazon/checkout/           @checkout-team
+/src/test/resources/features/checkout/       @checkout-team
+/src/test/resources/suites/checkout-suite.xml @checkout-team
+
+# ─── Tracking / Orders module — @orders-team owns ────────────────────────────
+/src/test/java/com/amazon/tracking/           @orders-team
+/src/test/resources/features/tracking/       @orders-team
+
+# ─── Offers module — @offers-team owns ───────────────────────────────────────
+/src/test/java/com/amazon/offers/             @offers-team
+/src/test/resources/features/offers/         @offers-team
+
+# ─── Shared test data — any team + framework lead ────────────────────────────
+/src/test/resources/testdata/                 @framework-lead @auth-team @checkout-team
+
+# ─── Shared Cucumber hooks and runners — framework lead only ─────────────────
+/src/test/java/com/amazon/hooks/              @framework-lead
+/src/test/java/com/amazon/runners/           @framework-lead

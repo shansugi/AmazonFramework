@@ -1,0 +1,24 @@
+version: '3.8'
+
+# ═══════════════════════════════════════════════════════════════
+# docker-compose.ci.yml — CI override for higher parallelism
+#
+# Use: docker-compose -f docker-compose.yml -f docker-compose.ci.yml up -d
+#
+# Scales Chrome to 5 nodes × 3 sessions = 15 parallel Chrome
+# Scales Firefox to 3 nodes × 2 sessions = 6 parallel Firefox
+# Total: 21 concurrent browser sessions in CI
+# ═══════════════════════════════════════════════════════════════
+
+services:
+  chrome-node:
+    deploy:
+      replicas: 5
+
+  firefox-node:
+    deploy:
+      replicas: 3
+
+  edge-node:
+    deploy:
+      replicas: 2

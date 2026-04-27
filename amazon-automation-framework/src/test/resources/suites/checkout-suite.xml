@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  checkout-suite.xml — Run ONLY checkout tests.
+  Used when a checkout-team PR is raised.
+  GitHub Actions: triggered when PR has label "checkout".
+
+  Run: mvn test -Denv=grid -Dsuite=suites/checkout-suite.xml
+-->
+<suite name="Checkout Team Suite"
+       parallel="methods"
+       thread-count="3"
+       verbose="1">
+
+    <listeners>
+        <listener class-name="com.amazon.framework.listeners.ExtentReportManager"/>
+        <listener class-name="com.amazon.framework.listeners.RetryTransformer"/>
+    </listeners>
+
+    <test name="Checkout BDD Scenarios">
+        <parameter name="cucumber.filter.tags" value="@checkout"/>
+        <classes>
+            <class name="com.amazon.runners.CucumberRunner"/>
+        </classes>
+    </test>
+
+    <test name="Checkout Data-Driven Tests">
+        <groups>
+            <run>
+                <include name="checkout"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="com.amazon.checkout.tests.OrderFlowTest"/>
+        </classes>
+    </test>
+
+</suite>

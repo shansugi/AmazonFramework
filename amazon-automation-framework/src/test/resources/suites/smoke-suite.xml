@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  smoke-suite.xml — Fast smoke suite (~10 min).
+  Runs on every PR. Uses 5 parallel threads.
+  Covers P1 tests from all modules.
+-->
+<suite name="Amazon Smoke Suite"
+       parallel="methods"
+       thread-count="5"
+       verbose="1">
+
+    <!-- Global listeners applied to ALL tests in this suite -->
+    <listeners>
+        <listener class-name="com.amazon.framework.listeners.ExtentReportManager"/>
+        <listener class-name="com.amazon.framework.listeners.RetryTransformer"/>
+    </listeners>
+
+    <!-- BDD Cucumber Smoke Scenarios -->
+    <test name="BDD Smoke Tests">
+        <parameter name="cucumber.filter.tags" value="@smokei and @p0"/>
+        <classes>
+            <class name="com.amazon.runners.CucumberRunner"/>
+        </classes>
+    </test>
+
+    <!-- Non-BDD Smoke Tests -->
+    <test name="Search and Cart Smoke">
+        <groups>
+            <run>
+                <include name="smoke"/>
+                <include name="p1"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="com.amazon.checkout.tests.OrderFlowTest"/>
+        </classes>
+    </test>
+
+</suite>

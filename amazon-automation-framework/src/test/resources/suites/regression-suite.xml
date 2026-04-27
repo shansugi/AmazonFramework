@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+  regression-suite.xml — Full nightly regression suite.
+  Runs 10 parallel threads. All modules, P1+P2+P3 tests.
+  Triggered by Jenkins nightly cron or on merge to main.
+
+  Run: mvn test -Denv=grid -Dsuite=suites/regression-suite.xml
+-->
+<suite name="Amazon Regression Suite"
+       parallel="methods"
+       thread-count="10"
+       verbose="1"
+       data-provider-thread-count="5">
+
+    <listeners>
+        <listener class-name="com.amazon.framework.listeners.ExtentReportManager"/>
+        <listener class-name="com.amazon.framework.listeners.RetryTransformer"/>
+    </listeners>
+
+    <!-- ═══ AUTH MODULE ═══ -->
+    <test name="Login BDD Tests">
+        <groups>
+            <run>
+                <include name="login"/>
+            </run>
+        </groups>
+        <parameter name="cucumber.filter.tags" value="@login"/>
+        <classes>
+            <class name="com.amazon.runners.CucumberRunner"/>
+        </classes>
+    </test>
+
+    <!-- ═══ PRODUCT MODULE ═══ -->
+    <test name="Product BDD Tests">
+        <parameter name="cucumber.filter.tags" value="@product"/>
+        <classes>
+            <class name="com.amazon.runners.CucumberRunner"/>
+        </classes>
+    </test>
+
+    <!-- ═══ CART MODULE ═══ -->
+    <test name="Cart BDD Tests">
+        <parameter name="cucumber.filter.tags" value="@cart"/>
+        <classes>
+            <class name="com.amazon.runners.CucumberRunner"/>
+        </classes>
+    </test>
+
+    <!-- ═══ CHECKOUT MODULE ═══ -->
+    <test name="Checkout BDD Tests">
+        <parameter name="cucumber.filter.tags" value="@checkout"/>
+        <classes>
+            <class name="com.amazon.runners.CucumberRunner"/>
+        </classes>
+    </test>
+
+    <!-- ═══ TRACKING MODULE ═══ -->
+    <test name="Tracking BDD Tests">
+        <parameter name="cucumber.filter.tags" value="@tracking"/>
+        <classes>
+            <class name="com.amazon.runners.CucumberRunner"/>
+        </classes>
+    </test>
+
+    <!-- ═══ OFFERS MODULE ═══ -->
+    <test name="Offers BDD Tests">
+        <parameter name="cucumber.filter.tags" value="@offers"/>
+        <classes>
+            <class name="com.amazon.runners.CucumberRunner"/>
+        </classes>
+    </test>
+
+    <!-- ═══ E2E DATA-DRIVEN TESTS ═══ -->
+    <test name="E2E Order Flow - Data Driven">
+        <groups>
+            <run>
+                <include name="checkout"/>
+                <include name="regression"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="com.amazon.checkout.tests.OrderFlowTest"/>
+        </classes>
+    </test>
+
+</suite>
