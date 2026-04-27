@@ -36,6 +36,20 @@ pipeline {
         )
     }
 
+    // ─── Triggers — GitHub push + scheduled runs ──────────────────────────────
+    triggers {
+        // Auto trigger on every GitHub push → uses smoke suite (default params)
+        githubPush()
+
+        // Every midnight 12 AM → smoke suite (default params)
+        cron('H 0 * * *')
+
+        // Every night 11 PM → regression suite (overrides params)
+        parameterizedCron('''
+            H 23 * * * % SUITE=suites/regression-suite.xml;BROWSER=chrome;ENV=staging;TAGS=@regression;THREADS=10
+        ''')
+    }
+
     // ─── Credentials injected as env vars — never hardcoded ──────────────────
     environment {
         TEST_EMAIL     = credentials('amazon-test-email')
@@ -44,6 +58,7 @@ pipeline {
         BS_ACCESS_KEY  = credentials('browserstack-key')
         HUB_URL        = 'http://selenium-hub:4444/wd/hub'
         BUILD_NUMBER   = "${env.BUILD_NUMBER}"
+        TEAMS_WEBHOOK  = credentials('teams-webhook-url')
     }
 
     stages {
@@ -193,23 +208,57 @@ pipeline {
         }
 
         success {
-            slackSend(
-                channel: '#qa-results',
-                color: 'good',
-                message: "✅ PASSED | ${params.SUITE} | ${params.ENV} | ${env.BUILD_URL}"
+            // ─── Microsoft Teams notification ─────────────────────────────────
+            office365ConnectorSend(
+                webhookUrl: "${TEAMS_WEBHOOK}",
+                message: "✅ BUILD PASSED | Suite: ${params.SUITE} | Env: ${params.ENV} | Browser: ${params.BROWSER} | Build: #${env.BUILD_NUMBER}",
+                status: 'Success',
+                color: '00FF00'
+            )
+
+            // ─── Email notification ───────────────────────────────────────────
+            emailext(
+                subject: "✅ Amazon Automation Passed - Build #${env.BUILD_NUMBER}",
+                body: """
+                    <h2>Build Passed ✅</h2>
+                    <p><b>Suite:</b> ${params.SUITE}</p>
+                    <p><b>Browser:</b> ${params.BROWSER}</p>
+                    <p><b>Environment:</b> ${params.ENV}</p>
+                    <p><b>Tags:</b> ${params.TAGS}</p>
+                    <p><b>Threads:</b> ${params.THREADS}</p>
+                    <p><b>Branch:</b> ${env.GIT_BRANCH}</p>
+                    <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                """,
+                mimeType: 'text/html',
+                to: 'shananth82@gmail.com'
             )
         }
 
         failure {
-            slackSend(
-                channel: '#qa-alerts',
-                color: 'danger',
-                message: "❌ FAILED | ${params.SUITE} | ${params.ENV} | ${env.BUILD_URL}"
+            // ─── Microsoft Teams alert ────────────────────────────────────────
+            office365ConnectorSend(
+                webhookUrl: "${TEAMS_WEBHOOK}",
+                message: "❌ BUILD FAILED | Suite: ${params.SUITE} | Env: ${params.ENV} | Browser: ${params.BROWSER} | Build: #${env.BUILD_NUMBER}",
+                status: 'Failure',
+                color: 'FF0000'
             )
+
+            // ─── Email alert ──────────────────────────────────────────────────
             emailext(
-                subject: "Amazon Automation FAILED - Build ${env.BUILD_NUMBER}",
-                body: "Build failed. See report: ${env.BUILD_URL}",
-                to: 'qa-team@company.com'
+                subject: "❌ Amazon Automation FAILED - Build #${env.BUILD_NUMBER}",
+                body: """
+                    <h2>Build Failed ❌</h2>
+                    <p><b>Suite:</b> ${params.SUITE}</p>
+                    <p><b>Browser:</b> ${params.BROWSER}</p>
+                    <p><b>Environment:</b> ${params.ENV}</p>
+                    <p><b>Tags:</b> ${params.TAGS}</p>
+                    <p><b>Threads:</b> ${params.THREADS}</p>
+                    <p><b>Branch:</b> ${env.GIT_BRANCH}</p>
+                    <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                    <p>Please check the logs for details.</p>
+                """,
+                mimeType: 'text/html',
+                to: 'shananth82@gmail.com'
             )
         }
     }
